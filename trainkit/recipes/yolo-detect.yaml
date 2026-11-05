@@ -1,0 +1,27 @@
+id: yolo-detect
+order: 1
+name: {zh: "YOLO 目标检测", en: "YOLO object detection"}
+description:
+  zh: "用方框标出物体位置和类别。机器人避障、计数、安防的首选。"
+  en: "Draw boxes around objects. The go-to choice for robot obstacle detection, counting and monitoring."
+family: ultralytics
+model_class: YOLO
+task: detect
+env: ultralytics
+weights:
+  default: yolo26n.pt
+  choices: [yolo26n.pt, yolo26s.pt, yolo26m.pt, yolo26l.pt, yolo11n.pt, yolo11s.pt, yolov8n.pt]
+dataset:
+  format: yolo
+  smoke: coco8.yaml
+  builtin:
+    - {name: coco8.yaml, note: {zh: "8 张图，冒烟测试用", en: "8 images, for smoke tests"}}
+    - {name: coco128.yaml, note: {zh: "128 张 COCO 图，快速试训", en: "128 COCO images, quick trial"}}
+    - {name: HomeObjects-3K.yaml, note: {zh: "室内家居物体，适合室内机器人避障", en: "Indoor household objects, good for indoor robot obstacle avoidance"}}
+    - {name: kitti.yaml, note: {zh: "道路场景（车、行人），适合户外机器人", en: "Road scenes (cars, pedestrians), good for outdoor robots"}}
+    - {name: VOC.yaml, note: {zh: "PASCAL VOC，20 类，约 2.8GB", en: "PASCAL VOC, 20 classes, ~2.8 GB"}}
+    - {name: construction-ppe.yaml, note: {zh: "工地安全帽/反光衣", en: "Construction PPE"}}
+requirements:
+  train: {min_ram_gb: 8, min_vram_gb: 4, min_disk_gb: 10}
+  preview: {min_ram_gb: 4, min_disk_gb: 4}
+defaults: {epochs: 100, imgsz: 640, batch: -1, patience: 50}

@@ -1,0 +1,7 @@
+# Versions tested together. Keeps every teammate on the same stack.
+# torch / torchvision are chosen by `uv --torch-backend` to match the local GPU.
+ultralytics==8.4.202
+gradio==6.31.0
+onnx>=1.17
+onnxslim>=0.1.50
+onnxruntime>=1.20

@@ -1,0 +1,24 @@
+id: rtdetr
+order: 6
+name: {zh: "RT-DETR 目标检测", en: "RT-DETR object detection"}
+description:
+  zh: "基于 Transformer 的实时检测器，精度高但更吃显存，适合 8GB 以上显卡。"
+  en: "Transformer-based real-time detector: accurate but memory-hungry; best with 8 GB+ GPUs."
+family: ultralytics
+model_class: RTDETR
+task: detect
+env: ultralytics
+weights:
+  default: rtdetr-l.pt
+  choices: [rtdetr-l.pt, rtdetr-x.pt]
+dataset:
+  format: yolo
+  smoke: coco8.yaml
+  builtin:
+    - {name: coco8.yaml, note: {zh: "8 张图，冒烟测试用", en: "8 images, for smoke tests"}}
+    - {name: coco128.yaml, note: {zh: "128 张 COCO 图", en: "128 COCO images"}}
+    - {name: HomeObjects-3K.yaml, note: {zh: "室内家居物体", en: "Indoor household objects"}}
+requirements:
+  train: {min_ram_gb: 16, min_vram_gb: 8, min_disk_gb: 10}
+  preview: {min_ram_gb: 8, min_disk_gb: 4}
+defaults: {epochs: 100, imgsz: 640, batch: 8, patience: 50}

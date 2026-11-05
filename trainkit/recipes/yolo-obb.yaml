@@ -1,0 +1,23 @@
+id: yolo-obb
+order: 5
+name: {zh: "YOLO 旋转框检测", en: "YOLO oriented boxes (OBB)"}
+description:
+  zh: "可旋转的方框，适合航拍、俯视相机、倾斜摆放的物体。"
+  en: "Rotated boxes for aerial / top-down cameras and tilted objects."
+family: ultralytics
+model_class: YOLO
+task: obb
+env: ultralytics
+weights:
+  default: yolo26n-obb.pt
+  choices: [yolo26n-obb.pt, yolo26s-obb.pt, yolo11n-obb.pt]
+dataset:
+  format: yolo
+  smoke: dota8.yaml
+  builtin:
+    - {name: dota8.yaml, note: {zh: "8 张航拍图，冒烟测试用", en: "8 aerial images, for smoke tests"}}
+    - {name: dota128.yaml, note: {zh: "128 张航拍图", en: "128 aerial images"}}
+requirements:
+  train: {min_ram_gb: 8, min_vram_gb: 6, min_disk_gb: 10}
+  preview: {min_ram_gb: 4, min_disk_gb: 4}
+defaults: {epochs: 100, imgsz: 1024, batch: -1, patience: 50}

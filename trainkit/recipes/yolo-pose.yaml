@@ -1,0 +1,24 @@
+id: yolo-pose
+order: 3
+name: {zh: "YOLO 姿态估计", en: "YOLO pose estimation"}
+description:
+  zh: "检测人体（或自定义物体）的关键点，可用于手势控制、跟随机器人。"
+  en: "Detect keypoints on people (or custom objects); useful for gesture control or person-following robots."
+family: ultralytics
+model_class: YOLO
+task: pose
+env: ultralytics
+weights:
+  default: yolo26n-pose.pt
+  choices: [yolo26n-pose.pt, yolo26s-pose.pt, yolo26m-pose.pt, yolo11n-pose.pt]
+dataset:
+  format: yolo
+  smoke: coco8-pose.yaml
+  builtin:
+    - {name: coco8-pose.yaml, note: {zh: "8 张图，冒烟测试用", en: "8 images, for smoke tests"}}
+    - {name: hand-keypoints.yaml, note: {zh: "手部 21 个关键点", en: "21 hand keypoints"}}
+    - {name: tiger-pose.yaml, note: {zh: "老虎姿态（演示自定义关键点）", en: "Tiger pose (custom keypoints demo)"}}
+requirements:
+  train: {min_ram_gb: 8, min_vram_gb: 6, min_disk_gb: 10}
+  preview: {min_ram_gb: 4, min_disk_gb: 4}
+defaults: {epochs: 100, imgsz: 640, batch: -1, patience: 50}

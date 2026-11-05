@@ -1,0 +1,25 @@
+id: yolo-seg
+order: 2
+name: {zh: "YOLO 实例分割", en: "YOLO instance segmentation"}
+description:
+  zh: "在方框之外给出物体的像素级轮廓，可用于估算可通行区域或物体面积。"
+  en: "Pixel-accurate object outlines on top of boxes; useful for free-space or area estimation."
+family: ultralytics
+model_class: YOLO
+task: segment
+env: ultralytics
+weights:
+  default: yolo26n-seg.pt
+  choices: [yolo26n-seg.pt, yolo26s-seg.pt, yolo26m-seg.pt, yolo11n-seg.pt, yolo11s-seg.pt]
+dataset:
+  format: yolo
+  smoke: coco8-seg.yaml
+  builtin:
+    - {name: coco8-seg.yaml, note: {zh: "8 张图，冒烟测试用", en: "8 images, for smoke tests"}}
+    - {name: coco128-seg.yaml, note: {zh: "128 张 COCO 图", en: "128 COCO images"}}
+    - {name: crack-seg.yaml, note: {zh: "路面/墙面裂缝", en: "Road and wall cracks"}}
+    - {name: carparts-seg.yaml, note: {zh: "汽车部件", en: "Car parts"}}
+requirements:
+  train: {min_ram_gb: 8, min_vram_gb: 6, min_disk_gb: 10}
+  preview: {min_ram_gb: 4, min_disk_gb: 4}
+defaults: {epochs: 100, imgsz: 640, batch: -1, patience: 50}

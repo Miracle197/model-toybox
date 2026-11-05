@@ -1,0 +1,24 @@
+id: yolo-cls
+order: 4
+name: {zh: "YOLO 图像分类", en: "YOLO image classification"}
+description:
+  zh: "判断整张图属于哪一类（如 '前方有障碍/无障碍'），最轻量、训练最快。"
+  en: "Label a whole image (e.g. 'blocked / clear ahead'). The lightest and fastest to train."
+family: ultralytics
+model_class: YOLO
+task: classify
+env: ultralytics
+weights:
+  default: yolo26n-cls.pt
+  choices: [yolo26n-cls.pt, yolo26s-cls.pt, yolo11n-cls.pt, yolo11s-cls.pt]
+dataset:
+  format: classify
+  smoke: imagenet10
+  builtin:
+    - {name: imagenet10, note: {zh: "ImageNet 10 类小样本，冒烟测试用", en: "Tiny 10-class ImageNet, for smoke tests"}}
+    - {name: mnist160, note: {zh: "手写数字 160 张", en: "160 handwritten digits"}}
+    - {name: cifar10, note: {zh: "CIFAR-10，10 类 6 万张小图", en: "CIFAR-10, 60k small images"}}
+requirements:
+  train: {min_ram_gb: 8, min_vram_gb: 2, min_disk_gb: 6}
+  preview: {min_ram_gb: 4, min_disk_gb: 4}
+defaults: {epochs: 50, imgsz: 224, batch: -1, patience: 20}

@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+dist/
+build/
+*.egg-info/
+.DS_Store
+# local training artifacts if someone points TRAINKIT_HOME into the repo
+.trainkit/

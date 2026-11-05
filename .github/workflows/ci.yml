@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  unit:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --group dev
+      - run: uv run pytest -q
+      - run: uv run trainkit doctor --no-network
+
+  smoke:
+    # Full chain on CPU runners: environment, weights, dataset, 1-epoch train, pause-free run, export, pack
+    needs: unit
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      TRAINKIT_LANG: en
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync
+      - run: uv run trainkit setup yolo-detect --profile train --torch-backend cpu --force
+      - run: uv run trainkit train yolo-detect --data coco8.yaml --epochs 2 --imgsz 160 --set workers=0 --no-dash --no-tui --name ci
+      - run: uv run trainkit runs
+      - name: export and pack the finished run
+        shell: bash
+        run: |
+          RUN=$(ls ~/.trainkit/runs | tail -1)
+          uv run trainkit export "$RUN" --format onnx --imgsz 160
+          uv run trainkit pack "$RUN" -o model.zip

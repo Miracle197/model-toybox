@@ -1,0 +1,42 @@
+[project]
+name = "trainkit"
+version = "0.1.0"
+description = "One-stop tool to set up, train and try YOLO models: auto environment setup, live training dashboard, standalone playground."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "AGPL-3.0-or-later"
+authors = [{ name = "TrainKit contributors" }]
+keywords = ["yolo", "ultralytics", "training", "computer-vision", "dashboard"]
+dependencies = [
+    "typer>=0.12",
+    "rich>=13.7",
+    "fastapi>=0.110",
+    "uvicorn>=0.29",
+    "websockets>=12",
+    "psutil>=5.9",
+    "nvidia-ml-py>=12.535",
+    "pyyaml>=6.0",
+    "httpx>=0.27",
+    "uv>=0.7.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/Miracle197/model-toybox"
+Repository = "https://github.com/Miracle197/model-toybox"
+Issues = "https://github.com/Miracle197/model-toybox/issues"
+
+[project.scripts]
+trainkit = "trainkit.cli:app"
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["trainkit"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
