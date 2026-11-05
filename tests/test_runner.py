@@ -10,11 +10,11 @@ tk_common = importlib.import_module("tk_common")
 
 def test_read_events_ignores_partial_line(tmp_path):
     f = tmp_path / "events.jsonl"
-    f.write_text('{"type": "status", "state": "running"}\n{"type": "ba')
+    f.write_bytes(b'{"type": "status", "state": "running"}\n{"type": "ba')  # bytes: no \r\n on Windows
     evs, off = runs.read_events(tmp_path)
     assert len(evs) == 1 and off == len('{"type": "status", "state": "running"}\n')
-    with open(f, "a") as fh:
-        fh.write('tch", "batch": 3, "nb": 10}\n')
+    with open(f, "ab") as fh:
+        fh.write(b'tch", "batch": 3, "nb": 10}\n')
     evs, off2 = runs.read_events(tmp_path, off)
     assert evs[0]["batch"] == 3
 
