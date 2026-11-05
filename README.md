@@ -2,223 +2,223 @@
 
 [![CI](https://github.com/Miracle197/model-toybox/actions/workflows/ci.yml/badge.svg)](https://github.com/Miracle197/model-toybox/actions/workflows/ci.yml)
 
-**一条命令装好环境，一键训练 YOLO，随时试玩模型。** 适合机器人、课程项目和小团队：组员不用再花一下午排查 CUDA、PyTorch 和依赖冲突。
+**Set up the environment with one command, train YOLO with one click, and try your model anytime.** Built for robotics teams, course projects and small groups: no more afternoons lost to CUDA, PyTorch and dependency conflicts.
 
-[English summary](#english)
+**English** | [简体中文](README.zh-CN.md)
 
 ```
-trainkit doctor   →   trainkit setup   →   trainkit train   →   trainkit play
- 检测这台电脑          装好一切              训练 + 实时面板         摄像头/视频试玩
+trainkit doctor   →   trainkit setup   →   trainkit train    →   trainkit play
+ check this PC         install everything    train + live views     camera / video demo
 ```
 
-## 它解决什么问题
+## What it fixes
 
-| 以前 | 用 TrainKit |
+| Before | With TrainKit |
 |---|---|
-| 手动查显卡驱动、CUDA、PyTorch 版本是否匹配 | `setup` 自动检测显卡并装对应的 PyTorch（**不需要装 CUDA Toolkit**） |
-| 依赖冲突、装错 CPU 版 torch、老显卡报 `no kernel image` | 每个模型独立环境；装完自动自检，并用 1 轮小训练验证整条链路 |
-| 数据集格式不对，训练到一半才报错 | 训练前检查标注；自动识别 YOLO / VOC / COCO / Roboflow 导出，自动划分训练/验证集 |
-| 训练只能盯着终端，中途想停只能 Ctrl+C | 终端视图 + 网页面板：暂停、继续、保存并退出、续训、立即停止 |
-| 组员想看效果还得自己配环境 | `trainkit play`：CPU 也能跑的试玩区，支持摄像头、视频、图片、两个模型对比 |
+| Manually matching GPU driver, CUDA and PyTorch versions | `setup` detects the GPU and installs the matching PyTorch build (**no CUDA Toolkit needed**) |
+| Dependency conflicts, a CPU-only torch by mistake, `no kernel image` on older GPUs | One isolated environment per model; an automatic self-test plus a 1-epoch training run proves the whole chain works |
+| A wrong dataset format that only fails halfway through training | Labels are checked before training; YOLO / VOC / COCO / Roboflow exports are recognized and split automatically |
+| Staring at a terminal; Ctrl+C is the only way to stop | Terminal view + web dashboard: pause, continue, save & exit, resume, stop |
+| Teammates must set up their own environment just to see results | `trainkit play`: a playground that also runs on CPU, with camera, video, images and side-by-side model comparison |
 
-## 安装
+## Install
 
-**Windows**：双击 `bootstrap/install-windows.bat`，或在 PowerShell 里运行：
+**Windows**: double-click `bootstrap/install-windows.bat`, or run in PowerShell:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -c "irm https://raw.githubusercontent.com/Miracle197/model-toybox/main/bootstrap/install.ps1 | iex"
 ```
 
-**macOS / Linux**：
+**macOS / Linux**:
 
 ```bash
 curl -LsSf https://raw.githubusercontent.com/Miracle197/model-toybox/main/bootstrap/install.sh | sh
 ```
 
-安装脚本会先装 [uv](https://github.com/astral-sh/uv)（它会顺便提供 Python），再安装 TrainKit。电脑上不需要事先装 Python。
+The installer first installs [uv](https://github.com/astral-sh/uv), which also provides Python, then installs TrainKit. Python does not need to be installed beforehand.
 
-从源码安装（开发用）：
+From source (for development):
 
 ```bash
 git clone https://github.com/Miracle197/model-toybox && cd model-toybox
 uv tool install --force .
 ```
 
-## 快速开始
+## Quick start
 
 ```bash
-trainkit doctor                       # 看看这台电脑能训练什么
-trainkit setup                        # 选模型，自动装好 PyTorch、依赖、权重和测试数据集
+trainkit doctor                       # what can this computer train?
+trainkit setup                        # pick a model; installs PyTorch, packages, weights and a test dataset
 trainkit train yolo-detect --data coco128.yaml --epochs 50
-trainkit play                         # 打开试玩区
+trainkit play                         # open the playground
 ```
 
-`train` 会同时打开终端实时视图和网页面板（默认 <http://127.0.0.1:7720>）。
+`train` opens a live terminal view and the web dashboard (default <http://127.0.0.1:7720>) at the same time.
 
-### 终端里的快捷键
+### Terminal hotkeys
 
-| 键 | 作用 |
+| Key | Action |
 |---|---|
-| `p` | 暂停（当前 batch 结束后原地等待，**显存不释放**，可以秒恢复） |
-| `c` | 继续 |
-| `s` | **本轮结束后保存并退出**：跑完当前这一轮，存档，释放显卡。之后用 `trainkit resume <id>` 接着练 |
-| `x` | 立即停止：保留上一轮结束时的存档，同样可以续训 |
-| `d` | 在浏览器里打开网页面板 |
-| `q` | 只关闭这个视图，**训练继续在后台跑** |
+| `p` | Pause: waits after the current batch. **GPU memory stays allocated**, so resuming is instant |
+| `c` | Continue |
+| `s` | **Save & exit after this epoch**: finishes the epoch, saves a checkpoint and frees the GPU. Continue later with `trainkit resume <id>` |
+| `x` | Stop now: keeps the checkpoint from the last completed epoch, which can also be resumed |
+| `d` | Open the web dashboard in a browser |
+| `q` | Close this view only; **training keeps running in the background** |
 
-另一个终端也能控制：`trainkit ctl <id> pause | continue | save-stop | stop`。
+You can also control a run from another terminal: `trainkit ctl <id> pause | continue | save-stop | stop`.
 
-### 为什么"暂停"分成三种
+### Why there are three ways to pause
 
-YOLO 训练只在每一轮（epoch）结束时存档，所以：
+YOLO training only saves a checkpoint at the end of each epoch, so:
 
-- **暂停**：最快，但显卡一直被占着。适合临时让一下 CPU，或者想先看看样例图。
-- **保存并退出**：要等这一轮跑完，但会真正释放显卡，关机都没问题。
-- **立即停止**：马上结束，这一轮做了一半的进度会丢掉。
+- **Pause** is the fastest, but the GPU stays occupied. Good for briefly freeing the CPU or looking at sample predictions.
+- **Save & exit** waits for the epoch to finish, but really frees the GPU. You can even shut the computer down.
+- **Stop now** ends immediately; progress within the current epoch is lost.
 
-TrainKit 每轮都会把存档原子地复制一份为 `resume.pt`。Ultralytics 训练正常结束时会删掉存档里的优化器状态，导致无法续训，这份副本就是为此准备的。
+Every epoch, TrainKit atomically copies the checkpoint to `resume.pt`. When Ultralytics training finishes normally it strips the optimizer state from its checkpoint, which makes resuming impossible; this copy avoids that.
 
-## 网页面板
+## Web dashboard
 
-`trainkit dash` 单独打开（训练时会自动启动）。
+Opens with `trainkit dash` (and automatically during training).
 
-- 所有训练记录及其状态；可以在网页上**新建训练**，不用碰命令行
-- 轮次和本轮进度、预计剩余时间、速度、设备
-- 训练损失 / 验证损失 / mAP·精确率·召回率 / 学习率曲线（悬停看数值；可切换为表格）
-- GPU 利用率、显存、温度（NVIDIA）；没有独显时显示 CPU 和内存
-- 每一轮用当前模型对 4 张固定验证图做预测的样例图，直观看到模型在进步
-- 暂停 / 继续 / 保存并退出 / 立即停止 / 继续训练 / 下载模型包
-- `trainkit dash --lan`：生成带访问令牌的链接，组员在同一局域网可以围观
+- Every run and its state; **start new training from the browser**, no command line needed
+- Epoch and batch progress, time remaining, speed, device
+- Training loss / validation loss / mAP · precision · recall / learning-rate charts (hover for values; switch to a table)
+- GPU utilization, VRAM and temperature (NVIDIA); CPU and RAM when there is no discrete GPU
+- Each epoch, the current model predicts on 4 fixed validation images, so you can see it improve
+- Pause / continue / save & exit / stop / continue training / download model bundle
+- `trainkit dash --lan` prints a link with an access token so teammates on the same network can watch
 
-## 试玩区（独立于训练）
+## Playground (independent of training)
 
 ```bash
-trainkit play                         # 自动列出训练出的模型和下载的权重
-trainkit play best.pt                 # 任何来源的 YOLO .pt / .onnx / OpenVINO 模型
-trainkit play robot-model.zip         # 组员发来的模型包
-trainkit play --source 0              # 直接打开本机第 0 个 USB 摄像头
-trainkit play --source rtsp://192.168.1.20:8554/cam   # 机器人相机的视频流
+trainkit play                         # lists your trained models and downloaded weights
+trainkit play best.pt                 # any YOLO .pt / .onnx / OpenVINO model, from anywhere
+trainkit play robot-model.zip         # a model bundle from a teammate
+trainkit play --source 0              # open local USB camera 0 directly
+trainkit play --source rtsp://192.168.1.20:8554/cam   # the robot's camera stream
 ```
 
-- 输入：浏览器摄像头、本机 USB 摄像头（延迟更低）、RTSP/HTTP 视频流、视频文件、图片
-- 调节置信度、IoU、输入尺寸，只看指定类别；显示帧率和每个模型的延迟
-- **A/B 对比**：选两个模型，画面并排显示
-- **危险区报警**：在画面下方画一个多边形（默认是机器人正前方的梯形），障碍物的"脚点"进入时高亮报警，适合快速验证避障逻辑
-- 录制标注后的视频；没有显卡时一键转成 ONNX 提速
+- Inputs: browser camera, local USB camera (lower latency), RTSP/HTTP streams, video files, images
+- Adjust confidence, IoU, input size, and filter classes; shows FPS and per-model latency
+- **A/B comparison**: pick two models and see their outputs side by side
+- **Danger-zone alert**: draw a polygon at the bottom of the frame (by default a trapezoid right in front of the robot). When an obstacle's "foot point" enters it, the zone is highlighted, which is handy for checking obstacle-avoidance logic quickly
+- Record the annotated video; one-click conversion to ONNX for speed when there is no GPU
 
-试玩区不依赖训练部分。只想看效果的组员在没有显卡的电脑上运行 `trainkit play`，它会提示安装一个约 1GB 的 CPU 预览环境。
+The playground does not depend on the training part. Teammates who only want to see results can run `trainkit play` on a computer without a GPU; it offers to install a ~1 GB CPU preview environment.
 
-## 数据集
+## Datasets
 
-`--data` 可以接受：
+`--data` accepts:
 
-| 写法 | 例子 |
+| Form | Examples |
 |---|---|
-| 内置数据集（首次使用自动下载） | `coco8.yaml`、`coco128.yaml`、`HomeObjects-3K.yaml`（室内物体，适合室内避障）、`kitti.yaml` |
-| 已登记的名称 | `trainkit datasets add obstacles ./my_data` 之后用 `--data obstacles` |
-| 文件夹 | 见下表，自动识别 |
-| `.zip` | 自动解压后按文件夹处理 |
-| `data.yaml` | 自动修正相对路径 |
-| Roboflow | `roboflow:workspace/project/3` 或 Universe 链接（先 `trainkit config roboflow_api_key <key>`） |
+| Built-in datasets (downloaded on first use) | `coco8.yaml`, `coco128.yaml`, `HomeObjects-3K.yaml` (indoor objects, good for indoor robots), `kitti.yaml` |
+| A registered name | after `trainkit datasets add obstacles ./my_data`, use `--data obstacles` |
+| A folder | recognized automatically, see below |
+| A `.zip` | extracted, then treated as a folder |
+| A `data.yaml` | relative paths are fixed automatically |
+| Roboflow | `roboflow:workspace/project/3` or a Universe URL (first run `trainkit config roboflow_api_key <key>`) |
 
-文件夹会被自动识别成以下几种结构之一：
+Folders are recognized as one of these layouts:
 
-- 已有 `data.yaml`（包括 Roboflow 导出）
-- `images/` + `labels/`，或图片和 `.txt` 标注放在同一个文件夹（LabelImg / X-AnyLabeling 导出）。没有划分时**自动按 8:2 划分**，类别名从 `classes.txt` 读取
-- `images/train` + `images/val`，或 `train/images` + `valid/images`
-- PASCAL VOC（`Annotations/*.xml` + `JPEGImages/`），自动转换
-- COCO JSON，自动转换（检测和分割）
-- 分类任务：每个类别一个文件夹，自动划分
+- An existing `data.yaml` (including Roboflow exports)
+- `images/` + `labels/`, or images and `.txt` labels in the same folder (LabelImg / X-AnyLabeling exports). Without a split, data is **split 80/20 automatically**; class names come from `classes.txt`
+- `images/train` + `images/val`, or `train/images` + `valid/images`
+- PASCAL VOC (`Annotations/*.xml` + `JPEGImages/`), converted automatically
+- COCO JSON, converted automatically (detection and segmentation)
+- Classification: one folder per class, split automatically
 
-TrainKit 不会修改你的原始文件。转换和划分的结果写在 `~/.trainkit/datasets/_prepared/`，图片尽量用硬链接，不额外占空间。
+TrainKit never modifies your original files. Converted and split data goes to `~/.trainkit/datasets/_prepared/`, using hard links for images where possible so no extra space is used.
 
-训练前的检查：类别编号越界、坐标没有归一化、列数不对、没有标注的图片太多、某些类别没有任何标注、图片太少等。
+Checks before training: class ids out of range, coordinates not normalized, wrong number of columns, too many unlabeled images, classes with no labels at all, too few images, and more.
 
-## 和组员共享
+## Sharing with teammates
 
-**共享训练配置**：
+**Share the training setup**:
 
 ```bash
-trainkit init                          # 生成 trainkit.yaml，提交到你们的仓库
-# 组员：
+trainkit init                          # writes trainkit.yaml; commit it to your repo
+# teammates:
 trainkit setup trainkit.yaml
 trainkit train trainkit.yaml
 ```
 
-**共享训练好的模型**：
+**Share a trained model**:
 
 ```bash
-trainkit pack <run-id> -o obstacle-v3.zip   # 权重 + 类别名 + 指标 + 训练曲线
-# 组员：
+trainkit pack <run-id> -o obstacle-v3.zip   # weights + class names + metrics + training curves
+# teammates:
 trainkit play obstacle-v3.zip
 ```
 
-**部署到机器人**：
+**Deploy to the robot**:
 
 ```bash
-trainkit export <run-id> --format onnx      # 通用
-trainkit export <run-id> --format openvino  # Intel CPU
-trainkit export <run-id> --format ncnn      # 树莓派等 ARM 板子
-trainkit export <run-id> --format engine    # Jetson（TensorRT，需在 Jetson 上运行）
+trainkit export <run-id> --format onnx      # general purpose
+trainkit export <run-id> --format openvino  # Intel CPUs
+trainkit export <run-id> --format ncnn      # Raspberry Pi and other ARM boards
+trainkit export <run-id> --format engine    # Jetson (TensorRT; run it on the Jetson)
 ```
 
-## 支持的模型（v1）
+## Supported models (v1)
 
-| 配方 | 任务 | 默认权重 |
+| Recipe | Task | Default weights |
 |---|---|---|
-| `yolo-detect` | 目标检测 | yolo26n.pt（可选 YOLO11 / YOLOv8 各尺寸） |
-| `yolo-seg` | 实例分割 | yolo26n-seg.pt |
-| `yolo-pose` | 姿态 / 关键点 | yolo26n-pose.pt |
-| `yolo-cls` | 图像分类 | yolo26n-cls.pt |
-| `yolo-obb` | 旋转框 | yolo26n-obb.pt |
-| `rtdetr` | RT-DETR 检测（≥ 8GB 显存） | rtdetr-l.pt |
+| `yolo-detect` | Object detection | yolo26n.pt (YOLO11 / YOLOv8 sizes also available) |
+| `yolo-seg` | Instance segmentation | yolo26n-seg.pt |
+| `yolo-pose` | Pose / keypoints | yolo26n-pose.pt |
+| `yolo-cls` | Image classification | yolo26n-cls.pt |
+| `yolo-obb` | Oriented boxes | yolo26n-obb.pt |
+| `rtdetr` | RT-DETR detection (≥ 8 GB VRAM) | rtdetr-l.pt |
 
-后续计划加入大模型 LoRA 微调（Unsloth）、Whisper 语音识别微调和扩散模型 LoRA。新增模型只需要写一个配方 YAML 和一个训练适配器。
+Planned: LLM LoRA fine-tuning (Unsloth), Whisper speech-recognition fine-tuning and diffusion LoRA. Adding a model family only takes a recipe YAML and a training adapter.
 
-## 硬件档位
+## Hardware tiers
 
-| 档位 | 条件 | 能做什么 |
+| Tier | Requirement | What you can do |
 |---|---|---|
-| NVIDIA | 有 NVIDIA 显卡且驱动够新 | 训练 + 试玩 |
-| Apple MPS | M 系列芯片的 Mac | 训练（比同级 NVIDIA 慢）+ 试玩 |
-| CPU 预览 | 其他电脑 | 只试玩模型；训练请用有显卡的电脑或 Colab/Kaggle |
+| NVIDIA | An NVIDIA GPU with a recent enough driver | Train + play |
+| Apple MPS | A Mac with an M-series chip | Train (slower than a comparable NVIDIA GPU) + play |
+| CPU preview | Any other computer | Play with models only; train on a GPU machine or Colab/Kaggle |
 
-`doctor` 会处理的情况：
+What `doctor` handles:
 
-- 驱动太旧：给出下载链接。不会自动装驱动，因为装驱动需要管理员权限还要重启
-- RTX 50 系列需要驱动 ≥ 570
-- GTX 10 系列等老显卡（计算能力 < 7.5）：PyTorch 的 CUDA 13 版本已经不支持，自动固定使用 CUDA 12.6 版本
-- Windows：长路径未开启、用户名含中文或在 OneDrive 里时，数据目录自动改到 `C:\trainkit`
+- Driver too old: gives you the download link. It does not install drivers itself, because that needs admin rights and a reboot
+- RTX 50 series needs driver ≥ 570
+- Older GPUs such as the GTX 10 series (compute capability < 7.5) are not supported by PyTorch's CUDA 13 builds, so TrainKit pins the CUDA 12.6 build automatically
+- Windows: when long paths are disabled, or the user name has non-ASCII characters or the profile lives in OneDrive, the data folder moves to `C:\trainkit`
 
-## 常见问题
+## FAQ
 
-**装得很慢 / 下载失败**：配置 PyPI 镜像，例如 `trainkit config pypi_index https://pypi.tuna.tsinghua.edu.cn/simple`，然后 `trainkit setup --reinstall`。
+**Installation is slow or downloads fail**: configure a PyPI mirror, e.g. `trainkit config pypi_index https://pypi.tuna.tsinghua.edu.cn/simple`, then run `trainkit setup --reinstall`.
 
-**有显卡但 PyTorch 用不上**：`trainkit setup --reinstall --torch-backend cu126`。
+**There is a GPU but PyTorch does not use it**: `trainkit setup --reinstall --torch-backend cu126`.
 
-**换到更大的硬盘**：设置环境变量 `TRAINKIT_HOME=D:\trainkit`。
+**Use a bigger drive**: set the environment variable `TRAINKIT_HOME=D:\trainkit`.
 
-**训练意外中断（死机、断电）**：`trainkit runs` 里会标为"已中断 ↻"，`trainkit resume <id>` 从最后一轮的存档继续。
+**Training was interrupted (crash, power loss)**: `trainkit runs` marks it "interrupted ↻"; `trainkit resume <id>` continues from the last epoch's checkpoint.
 
-**界面语言**：`trainkit config lang zh` 或 `en`；网页右上角也可以切换。
+**Interface language**: `trainkit config lang en` or `zh`; the web dashboard also has a switch in the top-right corner.
 
-## 工作原理
+## How it works
 
 ```
-trainkit (CLI，很轻，不依赖 torch)
- ├─ doctor    探测 GPU/驱动/内存/磁盘/网络 → 每个配方「可训练 / 仅预览 / 不可用」
- ├─ setup     uv 创建独立环境 ~/.trainkit/envs/ultralytics
- │            uv pip install --torch-backend <按显卡选择>  → 自检 → 冒烟训练
- ├─ train     在后台启动训练子进程（关掉终端也不影响）
- │              ultralytics_run.py ── 写 → runs/<id>/events.jsonl ── 读 → 终端视图 / 网页面板
- │                                 ←─ 读 ── runs/<id>/control.json ←─ 写 ── 暂停/继续/保存退出
- ├─ dash      FastAPI + WebSocket，静态页面无需构建
- └─ play      Gradio 试玩区（在模型环境里运行，可单独使用）
+trainkit (CLI, lightweight, no torch dependency)
+ ├─ doctor    probes GPU/driver/memory/disk/network → each recipe: "can train / preview only / unavailable"
+ ├─ setup     uv creates an isolated environment ~/.trainkit/envs/ultralytics
+ │            uv pip install --torch-backend <chosen for your GPU>  → self-test → smoke training
+ ├─ train     starts the training process in the background (closing the terminal does not stop it)
+ │              ultralytics_run.py ── writes → runs/<id>/events.jsonl ── read by → terminal view / web dashboard
+ │                                 ←─ reads ── runs/<id>/control.json ←─ written by ── pause/continue/save & exit
+ ├─ dash      FastAPI + WebSocket; static page, no build step
+ └─ play      Gradio playground (runs inside the model environment, usable on its own)
 ```
 
-所有状态都在文件里，面板或终端崩了不影响训练，重新打开会接着显示。
+All state lives in files, so if the dashboard or terminal crashes, training is unaffected and reopening picks up where it left off.
 
-## 开发
+## Development
 
 ```bash
 uv sync --group dev
@@ -226,23 +226,8 @@ uv run pytest
 uv run trainkit doctor
 ```
 
-## 致谢与许可证
+## Credits and license
 
-基于 [Ultralytics](https://github.com/ultralytics/ultralytics)（AGPL-3.0）、[uv](https://github.com/astral-sh/uv)、[Gradio](https://github.com/gradio-app/gradio)、[FastAPI](https://github.com/fastapi/fastapi)、[Rich](https://github.com/Textualize/rich) 和 [uPlot](https://github.com/leeoniya/uPlot)（MIT）。
+Built on [Ultralytics](https://github.com/ultralytics/ultralytics) (AGPL-3.0), [uv](https://github.com/astral-sh/uv), [Gradio](https://github.com/gradio-app/gradio), [FastAPI](https://github.com/fastapi/fastapi), [Rich](https://github.com/Textualize/rich) and [uPlot](https://github.com/leeoniya/uPlot) (MIT).
 
-因为调用了 AGPL-3.0 的 Ultralytics，TrainKit 同样以 **AGPL-3.0** 发布。用它训练出的模型的许可证取决于所用的模型（Ultralytics YOLO 模型为 AGPL-3.0）。
-
----
-
-## English
-
-**TrainKit sets up, trains and demos YOLO models with almost no manual configuration.** It was built for robotics teams: getting a teammate from a fresh laptop to a live-camera demo should take one installer and three commands.
-
-- `trainkit doctor` checks the GPU, driver, memory, disk and network, then says which models this machine can train or only preview.
-- `trainkit setup` creates an isolated environment with uv. It installs the PyTorch build that matches the GPU (no CUDA Toolkit needed), downloads weights and a dataset, and runs a 1-epoch smoke test. Old GPUs (e.g. GTX 10-series) are pinned to CUDA 12.6 builds automatically.
-- `trainkit train` runs training as a background process. You get a live terminal view and a web dashboard with charts, sample predictions and GPU load. Controls: **pause** (instant, keeps GPU memory), **save & exit after this epoch** (frees the GPU, resumable), **stop now**, and **resume**.
-- `trainkit play` is a standalone Gradio playground. It accepts any YOLO `.pt`/`.onnx`/OpenVINO model and reads from a browser camera, USB camera, RTSP stream, video file or image. It also has an A/B comparison view and a danger-zone alert for obstacle avoidance. It runs on CPU-only machines.
-- Datasets: built-in Ultralytics sets, folders (YOLO / VOC / COCO / Roboflow exports, auto-split), zips, `data.yaml`, or Roboflow URLs. Everything is validated before training.
-- Sharing: `trainkit init` writes a `trainkit.yaml` project file; `trainkit pack` bundles a model for `trainkit play`; `trainkit export` produces ONNX / OpenVINO / NCNN / TensorRT.
-
-Install on Windows with `bootstrap/install-windows.bat` (or `install.ps1`), and on macOS/Linux with `bootstrap/install.sh`. The interface is in Chinese or English (`trainkit config lang en`). License: AGPL-3.0, because TrainKit builds on Ultralytics.
+Because it builds on AGPL-3.0 Ultralytics, TrainKit is also released under **AGPL-3.0**. The license of models you train depends on the model used (Ultralytics YOLO models are AGPL-3.0).
